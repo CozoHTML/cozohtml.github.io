@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="cn">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>小编辑器</title>
+    
+    <script src="../src/jquery/jquery-1.8.2.js" ></script>
+    <script src="../src/filesaver/FileSaver.js" charset="utf-8"></script>
+    <link rel="stylesheet" href="../src/bootstrap/bootstrap.css">
+    <script src="../src/bootstrap/bootstrap.js"></script>
+	
+	<!-- load ace -->
+	<script src="../src/ace/src/ace.js"></script>
+	<!-- load ace statusbar extension -->
+	<script src="../src/ace/src/ext-statusbar.js"></script>
+	<script src="../src/ace/src/ext-language_tools.js" charset="utf-8"></script>
+	<script src="../src/ace/show_own_source.js"></script>
+    
+    <style type="text/css" media="screen">
+    body {
+        overflow: hidden;
+    }
+    
+    #editor { 
+        margin: 0;
+        position: absolute;
+        top: 0;
+        bottom: 36px;
+        left: 0;
+        right: 0;
+    }
+    #statusBar {
+        margin: 0;
+        padding: 0;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        height: 36px;
+        background-color: rgb(245, 245, 245);
+        color: gray;
+    }
+    .ace_status-indicator {
+		font-size:12px;
+		width:48px;
+        color: gray;
+        position: absolute;
+        right: 0;
+		top: 1px;
+		padding-left: 6px;
+        border-left: 1px solid;
+		
+		line-height:36px;
+		overflow:hidden;
+    }
+    </style>
+</head>
+<body>
+
+<div id="statusBar" style="margin:0 10px;background-color:white;">
+	<div style="float:left;padding:3px 0;">
+		<input type="file" id="files" style="display:none" onchange="fileimport();"/>
+		<input type="button" id="import" value="打开" 
+			class="btn btn-default btn-sm" style="font-size:8px;text-align:center;"/>
+		<input type="button" id="export" value="保存" 
+			class="btn btn-default btn-sm" style="font-size:8px;text-align:center;"/>
+	</div>
+	<div class="dropup" style="float:right;padding:7px 64px 0 0;">
+		<button type="button" class="btn dropdown-toggle btn-xs" id="dropdownMenuLang" data-toggle="dropdown" 
+				style="text-align:left;width:96px;color:black;background-color:white;">
+			语言：TEXT
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuLang">
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setMode('C_CPP')">C</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setMode('C_CPP')">C++</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setMode('JAVA')">JAVA</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setMode('HTML')">HTML</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setMode('TEXT')">TEXT</a>
+			</li>
+		</ul>
+	</div>
+	<div class="dropup" style="float:right;padding:7px 8px 0 0;">
+		<button type="button" class="btn dropdown-toggle btn-xs" id="dropdownMenuSize" data-toggle="dropdown" 
+				style="text-align:left;width:96px;color:black;background-color:white;">
+			字号：12px
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuSize">
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(12)">12px</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(16)">16px</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(20)">20px</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(24)">24px</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(28)">28px</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setSize(32)">32px</a>
+			</li>
+		</ul>
+	</div>
+	<div class="dropup" style="float:right;padding:7px 8px 0 0;">
+		<button type="button" class="btn dropdown-toggle btn-xs" id="dropdownMenuTab" data-toggle="dropdown" 
+				style="text-align:left;width:96px;color:black;background-color:white;">
+			Tab长度：4
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuTab">
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTab(2)">2</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTab(4)">4</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTab(8)">8</a>
+			</li>
+		</ul>
+	</div>
+	<div class="dropup" style="float:right;padding:7px 8px 0 0;">
+		<button type="button" class="btn dropdown-toggle btn-xs" id="dropdownMenuTheme" data-toggle="dropdown" 
+				style="text-align:left;margin:0 10px;color:black;background-color:white;">
+			主题：Clouds
+		</button>
+		<ul class="dropdown-menu" role="menu" aria-labelledby="dropdownMenuTheme">
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Clouds')">Clouds</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Chrome')">Chrome</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Eclipse')">Eclipse</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('KatzenMilch')">KatzenMilch</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('TextMate')">Textmate</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Xcode')">Xcode</a>
+			</li>
+			<li role="presentation" class="divider"></li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Chaos')">Chaos</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Vibrant_Ink')">Vibrant Ink</a>
+			</li>
+			<li role="presentation">
+				<a role="menuitem" tabindex="-1" onclick="setTheme('Tomorrow_Night_Bright')">Tomorrow Night Bright</a>
+			</li>
+		</ul>
+	</div>
+</div>
+<pre id="editor"></pre>
+
+<script>
+	var editor = ace.edit("editor");
+	var StatusBar = ace.require("ace/ext/statusbar").StatusBar;
+	// create a simple selection status indicator
+	var statusBar = new StatusBar(editor, document.getElementById("statusBar"));
+	//主题
+	editor.setTheme("ace/theme/clouds");
+	//语言
+	editor.session.setMode("ace/mode/text");
+	//自动换行
+	editor.setOption("wrap", "free");
+	//字体大小
+	editor.setFontSize(12);
+	//启用提示菜单
+	ace.require("ace/ext/language_tools");
+	editor.setOptions({
+			enableBasicAutocompletion: true,
+			enableSnippets: true,
+			enableLiveAutocompletion: true
+	});
+	
+	editor.setValue("这是一个简单的文本编辑器");
+	editor.moveCursorTo(0, 0);
+	
+	//文本读取与保存
+	var fileName = "Text.txt";
+	function fileimport()
+	{
+		var selectedFile = document.getElementById("files").files[0];
+		var name = selectedFile.name;
+		var size = selectedFile.size;
+		fileName = name;
+
+		var reader = new FileReader();
+		reader.readAsText(selectedFile,'utf-8');
+
+		reader.onload = function(){
+			editor.setValue(this.result);
+			editor.moveCursorTo(0, 0);
+		};
+	}
+
+	$(document).ready(function(){
+		$("#import").click(function(){
+			$("#files").click();
+		});
+
+		$("#export").click(function(){
+			var content = editor.getValue();
+			var blob = new Blob([content], {type: "text/plain;charset=utf-8"});
+			saveAs(blob, fileName);
+		});
+	})
+	
+	//设置
+	function setMode(text)
+	{
+		document.getElementById("dropdownMenuLang").innerHTML = "语言："+text;
+		editor.session.setMode("ace/mode/"+text.toLowerCase());
+	}
+	function setSize(num)
+	{
+		document.getElementById("dropdownMenuSize").innerHTML = "字号："+num.toString()+"px";
+		editor.setFontSize(num);
+	}
+	function setTab(num)
+	{
+		document.getElementById("dropdownMenuTab").innerHTML = "Tab长度："+num.toString();
+		editor.getSession().setTabSize(num);
+	}
+	String.prototype.firstUpperCase=function(){
+		return this.replace(/^\S/,function(s){return s.toUpperCase();});
+	}
+	function setTheme(text)
+	{
+		document.getElementById("dropdownMenuTheme").innerHTML = "主题："+text.firstUpperCase();
+		editor.setTheme("ace/theme/"+text.toLowerCase());
+	}
+</script>
+
+</body>
+</html>
+
