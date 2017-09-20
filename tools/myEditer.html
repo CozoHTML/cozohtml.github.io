@@ -27,7 +27,7 @@
         margin: 0;
         position: absolute;
         top: 0;
-        bottom: 36px;
+        bottom: 38px;
         left: 0;
         right: 0;
 	border:0;
@@ -39,7 +39,7 @@
         left: 0;
         right: 0;
         bottom: 0;
-        height: 36px;
+        height: 38px;
         color: gray;
     }
 	.ace_status-indicator {
@@ -52,14 +52,15 @@
 		padding-left: 6px;
         border-left: 1px solid;
 		
-		line-height:36px;
+		line-height:38px;
 		overflow:hidden;
     }
     </style>
 </head>
 <body>
 
-<div id="statusBar" style="padding:0 10px;background-color:#EEEEFF;">
+<div id="statusBar" style="padding:2px 10px 0 10px;background-color:#EEEEFF;
+	box-shadow:0px 2px 6px #CDCDCD inset;">
 	<div style="float:left;padding:3px 0;">
 		<input type="file" id="files" style="display:none" onchange="fileimport();"/>
 		<input type="button" id="import" value="打开" 
